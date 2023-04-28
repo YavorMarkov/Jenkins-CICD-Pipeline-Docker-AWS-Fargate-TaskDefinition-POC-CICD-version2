@@ -143,6 +143,7 @@ pipeline {
                 }
             }
         }
+
         stage('Create ECS task definition') {
             steps {
                 script {

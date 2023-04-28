@@ -163,73 +163,75 @@ pipeline {
                             secretKeyVariable: 'AWS_SECRET_ACCESS_KEY'
                         ]
                     ]) {
-                        def security_group_id = sh(
-                            script: """
-                            aws ec2 create-security-group \
-                                --group-name allow_http \
-                                --description 'Allow inbound traffic on port 5000' \
-                                --query 'GroupId' \
-                                --output text""",
-                            returnStdout: true
-                        ).trim()
- 
-                        sh """
-                        aws ec2 authorize-security-group-ingress \
-                            --group-id ${security_group_id} \
-                            --protocol tcp \
-                            --port ${CONTAINER_PORT} \
-                            --cidr 0.0.0.0/0
-                        """
+                        try {
+                            def security_group_id = sh(
+                                script: """
+                                aws ec2 create-security-group \
+                                    --group-name allow_http \
+                                    --description 'Allow inbound traffic on port 5000' \
+                                    --query 'GroupId' \
+                                    --output text""",
+                                returnStdout: true
+                            ).trim()
 
-                        sh """
-                        aws ecs create-cluster \
-                            --cluster-name ${ECS_CLUSTER_NAME}
-                        """
+                            sh """
+                            aws ec2 authorize-security-group-ingress \
+                                --group-id ${security_group_id} \
+                                --protocol tcp \
+                                --port ${CONTAINER_PORT} \
+                                --cidr 0.0.0.0/0
+                            """
 
-                        def task_definition_arn = sh(
-                            script: """
-                            aws ecs register-task-definition \
-                                --family ${TASK_FAMILY_NAME} \
-                                --requires-compatibilities FARGATE \
-                                --network-mode awsvpc \
-                                --cpu 512 \
-                                --memory 1024 \
-                                --execution-role-arn "arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy" \
-                                --container-definitions "[{
-                                    \\"name\\": \\"demo1-aws-container\\",
-                                    \\"image\\": \\"${ECR_REPOSITORY_NAME}:latest\\",
-                                    \\"cpu\\": 0,
-                                    \\"memory\\": 1024,
-                                    \\"essential\\": true,
-                                    \\"portMappings\\": [{
-                                        \\"containerPort\\": ${CONTAINER_PORT},
-                                        \\"hostPort\\": ${CONTAINER_PORT},
-                                        \\"protocol\\": \\"tcp\\"
-                                    }]
-                                }]" \
-                                --query 'taskDefinition.taskDefinitionArn' \
-                                --output text""",
-                            returnStdout: true
-                        ).trim()
+                            sh """
+                            aws ecs create-cluster \
+                                --cluster-name ${ECS_CLUSTER_NAME}
+                            """
 
-                        sh """
-                        aws ecs create-service \
-                            --cluster ${ECS_CLUSTER_NAME} \
-                            --service-name ${ECS_SERVICE_NAME} \
-                            --task-definition ${task_definition_arn} \
-                            --desired-count 1 \
-                            --launch-type FARGATE \
-                            --network-configuration "awsvpcConfiguration={
-                                \\"subnets\\": [${SUBNET_IDS}],
-                                \\"assignPublicIp\\": \\"ENABLED\\",
-                                \\"securityGroups\\": [\\"${security_group_id}\\"]
-                            }" \
-                            --deployment-controller '{"type": "ECS"}' \
-                            --wait-for-steady-state
-                        """
+                            def task_definition_arn = sh(
+                                script: """
+                                aws ecs register-task-definition \
+                                    --family ${TASK_FAMILY_NAME} \
+                                    --requires-compatibilities FARGATE \
+                                    --network-mode awsvpc \
+                                    --cpu 512 \
+                                    --memory 1024 \
+                                    --execution-role-arn "arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy" \
+                                    --container-definitions "[{
+                                        \\"name\\": \\"demo1-aws-container\\",
+                                        \\"image\\": \\"${ECR_REPOSITORY_NAME}:latest\\",
+                                        \\"cpu\\": 0,
+                                        \\"memory\\": 1024,
+                                        \\"essential\\": true,
+                                        \\"portMappings\\": [{
+                                            \\"containerPort\\": ${CONTAINER_PORT},
+                                            \\"hostPort\\": ${CONTAINER_PORT},
+                                            \\"protocol\\": \\"tcp\\"
+                                        }]
+                                    }]" \
+                                    --query 'taskDefinition.taskDefinitionArn' \
+                                    --output text""",
+                                returnStdout: true
+                            ).trim()
+
+                            sh """
+                            aws ecs create-service \
+                                --cluster ${ECS_CLUSTER_NAME} \
+                                --service-name ${ECS_SERVICE_NAME} \
+                                --task-definition ${task_definition_arn} \
+                                --desired-count 1 \
+                                --launch-type FARGATE \
+                                --network-configuration "awsvpcConfiguration={
+                                    \\"subnets\\": [${SUBNET_IDS}],
+                                    \\"assignPublicIp\\": \\"ENABLED\\",
+                                    \\"securityGroups\\": [\\"${security_group_id}\\"]
+                                }" \
+                                --deployment-controller '{"type": "ECS"}' \
+                                --wait-for-steady-state
+                            """
+                        } catch (Exception e) {
+                            echo "Error creating security group: ${e.message}"
+                        }
                     }
                 }
             }
         }
-    }
-} 

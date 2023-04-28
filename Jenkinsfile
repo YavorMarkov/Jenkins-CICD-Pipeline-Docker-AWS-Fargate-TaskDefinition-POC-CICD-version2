@@ -219,7 +219,7 @@ pipeline {
                                 aws ecs describe-tasks \
                                     --cluster ${ECS_CLUSTER_NAME} \
                                     --tasks ${task_arn} \
-                                    --query 'tasks[0].attachments[0].details[?name==\`networkInterfaceId\`].value' \
+                                    --query 'tasks[0].attachments[0].details[?name==`networkInterfaceId`].value' \
                                     --output text""",
                                 returnStdout: true
                             ).trim()

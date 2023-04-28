@@ -115,7 +115,7 @@ pipeline {
         }
 
         stage('Create IAM Role') {
-            steps {
+           steps {
                 script {
                     def iamRoleName = "ecs_execution_role"
                     def trustPolicy = """{
@@ -125,25 +125,31 @@ pipeline {
                                 "Effect": "Allow",
                                 "Principal": { "Service": "ecs-tasks.amazonaws.com" },
                                 "Action": "sts:AssumeRole"
-                            }
-                        ]
-                    }"""
+                    }
+                ]
+            }"""
 
-                    def createRoleCommand = "aws iam create-role --role-name ${iamRoleName} --assume-role-policy-document '${trustPolicy}'"
-                    def attachPolicyCommand = "aws iam attach-role-policy --role-name ${iamRoleName} --policy-arn arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy"
+            def checkRoleCommand = "aws iam get-role --role-name ${iamRoleName}"
+            def createRoleCommand = "aws iam create-role --role-name ${iamRoleName} --assume-role-policy-document '${trustPolicy}'"
+            def attachPolicyCommand = "aws iam attach-role-policy --role-name ${iamRoleName} --policy-arn arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy"
 
-                    withCredentials([[
-                        $class: 'AmazonWebServicesCredentialsBinding',
-                        accessKeyVariable: 'AWS_ACCESS_KEY_ID',
-                        credentialsId: 'aws-credentials-id',
-                        secretKeyVariable: 'AWS_SECRET_ACCESS_KEY'
-                    ]]) {
-                        sh createRoleCommand
-                        sh attachPolicyCommand
+            withCredentials([[
+                $class: 'AmazonWebServicesCredentialsBinding',
+                accessKeyVariable: 'AWS_ACCESS_KEY_ID',
+                credentialsId: 'aws-credentials-id',
+                secretKeyVariable: 'AWS_SECRET_ACCESS_KEY'
+            ]]) {
+                try {
+                    sh checkRoleCommand
+                } catch (Exception e) {
+                    sh createRoleCommand
+                }
+                sh attachPolicyCommand
             }
         }
     }
 }
+
 
 
         stage('Deploy to ECS') {

@@ -221,7 +221,7 @@ pipeline {
                                     --tasks ${task_arn} \
                                     --query 'tasks[0].attachments[0].details[?name==`networkInterfaceId`].value' \
                                     --output text""",
-                                returnStdout: true
+                                returnStdout: true 
                             ).trim()
 
                             def public_ip = sh(

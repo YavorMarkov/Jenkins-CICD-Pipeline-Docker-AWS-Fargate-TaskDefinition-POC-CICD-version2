@@ -3,7 +3,7 @@ pipeline {
 
     environment {
         AWS_REGION = 'eu-central-1'
-        ECR_REPOSITORY = 'demo1'
+        ECR_REPOSITORY_NAME = 'demo1'
         TASK_FAMILY_NAME = 'demo1-aws-ecr-example'
         ECS_CLUSTER_NAME = 'demo-aws-ecs-cluster'
         ECS_SERVICE_NAME = 'demo-aws-ecs-service'

@@ -135,7 +135,7 @@ pipeline {
                                 --output text""",
                             returnStdout: true
                         ).trim()
-
+ 
                         sh """
                         aws ec2 authorize-security-group-ingress \
                             --group-id ${security_group_id} \

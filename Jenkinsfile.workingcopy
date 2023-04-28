@@ -152,7 +152,7 @@ pipeline {
 
 
 
-        stage('Deploy to ECS') {
+        stage('Deploy to ECS') { 
             steps {
                 script {
                     withCredentials([
@@ -174,7 +174,6 @@ pipeline {
                                 returnStdout: true
                             ).trim()
 
-                            // Add ingress rule to the security group
                             sh """
                             aws ec2 authorize-security-group-ingress \
                                 --group-id ${security_group_id} \
@@ -183,9 +182,37 @@ pipeline {
                                 --cidr 0.0.0.0/0
                             """
 
-                            // (Existing code for creating ECS cluster and task definition)
+                            sh """
+                            aws ecs create-cluster \
+                                --cluster-name ${ECS_CLUSTER_NAME}
+                            """
 
-                            // Modify the 'aws ecs create-service' command
+                            def task_definition_arn = sh(
+                                script: """
+                                aws ecs register-task-definition \
+                                    --family ${TASK_FAMILY_NAME} \
+                                    --requires-compatibilities FARGATE \
+                                    --network-mode awsvpc \
+                                    --cpu 512 \
+                                    --memory 1024 \
+                                    --execution-role-arn "arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy" \
+                                    --container-definitions "[{
+                                        \\"name\\": \\"demo1-aws-container\\",
+                                        \\"image\\": \\"${ECR_REPOSITORY_NAME}:latest\\",
+                                        \\"cpu\\": 0,
+                                        \\"memory\\": 1024,
+                                        \\"essential\\": true,
+                                        \\"portMappings\\": [{
+                                            \\"containerPort\\": ${CONTAINER_PORT},
+                                            \\"hostPort\\": ${CONTAINER_PORT},
+                                            \\"protocol\\": \\"tcp\\"
+                                        }]
+                                    }]" \
+                                    --query 'taskDefinition.taskDefinitionArn' \
+                                    --output text""",
+                                returnStdout: true
+                            ).trim()
+
                             sh """
                             aws ecs create-service \
                                 --cluster ${ECS_CLUSTER_NAME} \
@@ -193,7 +220,6 @@ pipeline {
                                 --task-definition ${task_definition_arn} \
                                 --desired-count 1 \
                                 --launch-type FARGATE \
-                                --platform-version LATEST \
                                 --network-configuration "awsvpcConfiguration={
                                     \\"subnets\\": [${SUBNET_IDS}],
                                     \\"assignPublicIp\\": \\"ENABLED\\",
@@ -202,39 +228,6 @@ pipeline {
                                 --deployment-controller '{"type": "ECS"}' \
                                 --wait-for-steady-state
                             """
-
-                            // Add output for the public IP address of the ECS service
-                            def task_arn = sh(
-                                script: """
-                                aws ecs list-tasks \
-                                    --cluster ${ECS_CLUSTER_NAME} \
-                                    --service-name ${ECS_SERVICE_NAME} \
-                                    --query 'taskArns[0]' \
-                                    --output text""",
-                                returnStdout: true
-                            ).trim()
-
-                            def eni_id = sh(
-                                script: """
-                                aws ecs describe-tasks \
-                                    --cluster ${ECS_CLUSTER_NAME} \
-                                    --tasks ${task_arn} \
-                                    --query 'tasks[0].attachments[0].details[?name==\`networkInterfaceId\`].value' \
-                                    --output text""",
-                                returnStdout: true
-                            ).trim()
-
-                            def public_ip = sh(
-                                script: """
-                                aws ec2 describe-network-interfaces \
-                                    --network-interface-ids ${eni_id} \
-                                    --query 'NetworkInterfaces[0].Association.PublicIp' \
-                                    --output text""",
-                                returnStdout: true
-                            ).trim()
-
-                            echo "Public IP address of the ECS service: http://${public_ip}:${CONTAINER_PORT}"
-
                         } catch (Exception e) {
                             echo "Error creating security group: ${e.message}"
                         }

@@ -10,7 +10,7 @@ pipeline {
         CONTAINER_PORT = '5000'
 
     }  
-  
+   
     stages {
         stage('Checkout') {
             steps {

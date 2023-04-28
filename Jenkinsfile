@@ -66,15 +66,17 @@ pipeline {
         
         stage('Push Docker image') {
             steps {
-                withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', credentialsId: 'aws-credentials-id']]) {
-                    def ecrLoginPassword = sh(script: "aws ecr get-login-password --region ${AWS_REGION}", returnStdout: true).trim()
-                    def ecrRepoUrl = sh(script: "aws ecr describe-repositories --repository-names ${ECR_REPOSITORY_NAME}  --query 'repositories[0].repositoryUri' --output text", returnStdout: true).trim()
-                    sh "docker login -u AWS -p ${ecrLoginPassword} ${ecrRepoUrl}"
-                    sh "docker push ${ecrRepoUrl}:latest"
+                script {
+                    withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', credentialsId: 'aws-credentials-id']]) {
+                        def ecrLoginPassword = sh(script: "aws ecr get-login-password --region ${AWS_REGION}", returnStdout: true).trim()
+                        def ecrRepoUrl = sh(script: "aws ecr describe-repositories --repository-names ${ECR_REPOSITORY_NAME}  --query 'repositories[0].repositoryUri' --output text", returnStdout: true).trim()
+                        sh "docker login -u AWS -p ${ecrLoginPassword} ${ecrRepoUrl}"
+                        sh "docker push ${ecrRepoUrl}:latest"
+                    }
                 }
             }
         }
-    
+
         stage('Fetch default VPC and subnets') {
             steps {
                 script {

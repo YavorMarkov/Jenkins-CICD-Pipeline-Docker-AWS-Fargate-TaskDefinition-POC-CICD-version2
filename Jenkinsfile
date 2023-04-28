@@ -8,6 +8,7 @@ pipeline {
         ECS_CLUSTER_NAME = 'demo-aws-ecs-cluster'
         ECS_SERVICE_NAME = 'demo-aws-ecs-service'
         CONTAINER_PORT = '5000'
+
     } 
  
     stages {
@@ -24,6 +25,19 @@ pipeline {
                 }
             }
         }
+
+        stage('Create ECR repository') {
+            steps {
+                script {
+                    try {
+                        sh "aws ecr describe-repositories --repository-names ${env.ECR_REPOSITORY_NAME}"
+                    } catch (Exception e) {
+                        sh "aws ecr create-repository --repository-name ${env.ECR_REPOSITORY_NAME}"
+                    }
+                }
+            }
+        }
+
 
         stage('Tag Docker image') {
             steps {

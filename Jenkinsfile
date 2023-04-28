@@ -152,7 +152,7 @@ pipeline {
 
 
 
-        stage('Deploy to ECS') {
+        stage('Deploy to ECS') { 
             steps {
                 script {
                     withCredentials([

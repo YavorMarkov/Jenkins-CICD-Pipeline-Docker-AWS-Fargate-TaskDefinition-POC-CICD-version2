@@ -293,7 +293,7 @@ pipeline {
                             echo "Task is running at http://${public_ip}:${CONTAINER_PORT}"
 
 
-
+                        }
 
                 }
             }

@@ -51,7 +51,7 @@ pipeline {
                         secretKeyVariable: 'AWS_SECRET_ACCESS_KEY'
                     ]]) {
                         def ecr_repository_url = sh(
-                            script: "aws ecr describe-repositories --repository-names ${ECR_REPOSITORY} --query 'repositories[0].repositoryUri' --output text",
+                            script: "aws ecr describe-repositories --repository-names ${ECR_REPOSITORY_NAME} --query 'repositories[0].repositoryUri' --output text",
                             returnStdout: true
                         ).trim()
 
@@ -73,7 +73,7 @@ pipeline {
                         sh 'eval $(aws ecr get-login --region ${AWS_REGION} --no-include-email)'
 
                         def ecr_repository_url = sh(
-                            script: "aws ecr describe-repositories --repository-names ${ECR_REPOSITORY} --query 'repositories[0].repositoryUri' --output text",
+                            script: "aws ecr describe-repositories --repository-names ${ECR_REPOSITORY_NAME} --query 'repositories[0].repositoryUri' --output text",
                             returnStdout: true
                         ).trim()
 
@@ -160,7 +160,7 @@ pipeline {
                                 --execution-role-arn "arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy" \
                                 --container-definitions "[{
                                     \\"name\\": \\"demo1-aws-container\\",
-                                    \\"image\\": \\"${ECR_REPOSITORY}:latest\\",
+                                    \\"image\\": \\"${ECR_REPOSITORY_NAME}:latest\\",
                                     \\"cpu\\": 0,
                                     \\"memory\\": 1024,
                                     \\"essential\\": true,

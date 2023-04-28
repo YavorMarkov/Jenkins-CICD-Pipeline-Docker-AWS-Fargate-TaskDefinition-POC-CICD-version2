@@ -36,7 +36,7 @@ pipeline {
                             sh "aws ecr create-repository --repository-name ${env.ECR_REPOSITORY_NAME} --region ${env.AWS_REGION}"
                        }
                     }
-                }
+                } 
             }
         }
      

@@ -1,6 +1,9 @@
 pipeline {
      options {
-    verbose()
+        verbose()
+        timestamps() // Add timestamps to console output
+        ansiColor('xterm') // Add color coding to console output
+     }
     agent any
     
 

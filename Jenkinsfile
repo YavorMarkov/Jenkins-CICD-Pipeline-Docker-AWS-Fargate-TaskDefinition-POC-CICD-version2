@@ -1,9 +1,10 @@
 pipeline {
-     agent any
+    agent any
      
-     options {
+    options {
         timestamps() // Add timestamps to console output
-        color('xterm') // Add color coding to console output
+        ansiColor('xterm') // Add color coding to console output
+    }
         
      }
     

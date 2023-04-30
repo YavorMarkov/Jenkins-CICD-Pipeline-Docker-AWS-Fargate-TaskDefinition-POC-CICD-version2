@@ -9,7 +9,7 @@ pipeline {
         ECS_SERVICE_NAME = 'demo-aws-ecs-service'
         CONTAINER_PORT = '5000'
     }   
-     
+      
     stages {
         stage('Get AWS Account ID') {
             steps {
@@ -343,4 +343,4 @@ pipeline {
             }
         }
     }
-}
+}  

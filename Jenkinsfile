@@ -36,7 +36,7 @@ pipeline {
                 }
             }
         }
-
+ 
         stage('Create ECR repository') {
             steps {
                 withCredentials([[

@@ -303,8 +303,9 @@ pipeline {
 
                         
                             
-
-                            // Terminate the task
+                            /* Commented out: Terminate the task
+    
+                                // Terminate the task
                             sh(
                                 script: """
                                 aws ecs stop-task \
@@ -316,6 +317,8 @@ pipeline {
                             ).trim()
 
                             echo "Fargate task terminated: ${task_id}"
+                            */
+                            
                         } catch (Exception e) {
                             error "Failed to run Fargate task: ${e.message}"
                         }

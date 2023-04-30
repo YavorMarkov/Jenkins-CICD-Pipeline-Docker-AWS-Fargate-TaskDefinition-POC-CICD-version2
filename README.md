@@ -1,5 +1,5 @@
 # POC-CICD-version2
-
+test
 This script is a Jenkins Pipeline script, written in Groovy, that defines the steps for Continuous Integration (CI) and Continuous Deployment (CD) of a Dockerized application. The application is built, pushed to Amazon Elastic Container Registry (ECR), and deployed on Amazon Elastic Container Service (ECS) using Fargate launch type. The script is divided into several stages, each with specific tasks.
 
 Checkout: This stage checks out the source code from the source code repository using the checkout scm command.

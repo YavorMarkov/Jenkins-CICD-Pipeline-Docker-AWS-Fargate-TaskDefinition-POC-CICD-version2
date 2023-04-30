@@ -1,5 +1,8 @@
 pipeline {
+     options {
+    verbose()
     agent any
+    
 
     environment {
         AWS_REGION = 'eu-central-1'

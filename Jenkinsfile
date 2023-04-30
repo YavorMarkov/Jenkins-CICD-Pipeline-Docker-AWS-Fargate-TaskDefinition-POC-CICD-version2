@@ -59,7 +59,7 @@ pipeline {
                 }
             }    
         }
-        
+
         stage('Push Docker image') {
             steps {
                 script {
@@ -138,8 +138,11 @@ pipeline {
                             sh checkRoleCommand
                         } catch (Exception e) {
                             sh createRoleCommand
+                        } finally {
+                             // Attaching policy regardless of whether the role was just created or already existed
+                            sh attachPolicyCommand
                         }
-                        sh attachPolicyCommand
+                        
                     }
                 }
             }

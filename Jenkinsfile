@@ -18,10 +18,17 @@ pipeline {
             steps {
                 withCredentials([aws(credentialsId: 'aws-credentials-id', accessKeyVariable: 'AWS_ACCESS_KEY_ID', secretKeyVariable: 'AWS_SECRET_ACCESS_KEY')]) {
                     script {
-                        env.ACCOUNT_ID = sh(script: 'aws sts get-caller-identity --query Account --output text', returnStdout: true).trim()
+                        env.ACCOUNT_ID = sh(returnStdout: true, script: '''
+                            get_aws_account_id() {
+                                aws sts get-caller-identity --query Account --output text
+                            }
+                            export AWS_ACCESS_KEY_ID
+                            export AWS_SECRET_ACCESS_KEY
+                            get_aws_account_id
+                        ''').trim()
                     }
                 }
-            } 
+            }
         }
 
 

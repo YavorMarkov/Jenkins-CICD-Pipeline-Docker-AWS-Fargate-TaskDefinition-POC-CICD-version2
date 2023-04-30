@@ -49,15 +49,15 @@ pipeline {
                         credentialsId: 'aws-credentials-id',
                         secretKeyVariable: 'AWS_SECRET_ACCESS_KEY'
                     ]]) {
-                        def ecr_repository_url = sh(
+                        env.ECR_REPOSITORY_URL = sh(
                             script: "aws ecr describe-repositories --repository-names ${ECR_REPOSITORY_NAME} --query 'repositories[0].repositoryUri' --output text",
                             returnStdout: true
-                        ).trim()
+                        ).trim()    
 
-                        sh "docker tag my-image:latest ${ecr_repository_url}:latest"
+                        sh "docker tag my-image:latest ${env.ECR_REPOSITORY_URL}:latest"
                     }
                 }
-            }
+            }    
         }
         
         stage('Push Docker image') {

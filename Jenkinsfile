@@ -40,7 +40,7 @@ pipeline {
         stage('Create ECR repository') {
             steps {
                 script {
-                    withCredentials([aws(credentialsId: 'aws-credentials-id', accessKeyVariable: 'AWS_ACCESS_KEY_ID', secretKeyVariable: 'AWS_SECRET_ACCESS_KEY')]) {
+                    withCredentials(aws(credentialsId: 'aws-credentials-id', accessKeyVariable: 'AWS_ACCESS_KEY_ID', secretKeyVariable: 'AWS_SECRET_ACCESS_KEY')) {
                         try {
                             sh "aws ecr describe-repositories --repository-names ${env.ECR_REPOSITORY_NAME} --region ${env.AWS_REGION}"
                         } catch (Exception e) {
@@ -54,12 +54,12 @@ pipeline {
         stage('Tag Docker image') {
             steps {
                 script {
-                    withCredentials([[
+                    withCredentials([
                         $class: 'AmazonWebServicesCredentialsBinding',
                         accessKeyVariable: 'AWS_ACCESS_KEY_ID',
                         credentialsId: 'aws-credentials-id',
                         secretKeyVariable: 'AWS_SECRET_ACCESS_KEY'
-                    ]]) {
+                    ]) {
                         env.ECR_REPOSITORY_URL = sh(
                             script: "aws ecr describe-repositories --repository-names ${ECR_REPOSITORY_NAME} --query 'repositories[0].repositoryUri' --output text",
                             returnStdout: true
@@ -91,12 +91,12 @@ pipeline {
         stage('Fetch default VPC and subnets') {
             steps {
                 script {
-                    withCredentials([[
+                    withCredentials([
                         $class: 'AmazonWebServicesCredentialsBinding',
                         accessKeyVariable: 'AWS_ACCESS_KEY_ID',
                         credentialsId: 'aws-credentials-id',
                         secretKeyVariable: 'AWS_SECRET_ACCESS_KEY'
-                    ]]) {
+                    ]) {
                         def default_vpc_id = sh(
                             script: """
                             aws ec2 describe-vpcs \
@@ -139,12 +139,12 @@ pipeline {
                     def createRoleCommand = "aws iam create-role --role-name ${iamRoleName} --assume-role-policy-document '${trustPolicy}'"
                     def attachPolicyCommand = "aws iam attach-role-policy --role-name ${iamRoleName} --policy-arn arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy"
 
-                    withCredentials([[
+                    withCredentials([
                         $class: 'AmazonWebServicesCredentialsBinding',
                         accessKeyVariable: 'AWS_ACCESS_KEY_ID',
                         credentialsId: 'aws-credentials-id',
                         secretKeyVariable: 'AWS_SECRET_ACCESS_KEY'
-                    ]]) {
+                    ]) {
                         try {
                             sh checkRoleCommand
                         } catch (Exception e) {
@@ -215,12 +215,12 @@ pipeline {
        stage('Run ECS task on Fargate') {
             steps {
                 script {
-                    withCredentials([[
+                    withCredentials([
                         $class: 'AmazonWebServicesCredentialsBinding',
                         accessKeyVariable: 'AWS_ACCESS_KEY_ID',
                         credentialsId: 'aws-credentials-id',
                         secretKeyVariable: 'AWS_SECRET_ACCESS_KEY'
-                    ]]) {
+                    ]) {
                         try {
                             def task_definition_arn = sh(
                                 script: """

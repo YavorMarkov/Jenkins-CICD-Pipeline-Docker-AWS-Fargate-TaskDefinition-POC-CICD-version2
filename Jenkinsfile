@@ -39,17 +39,20 @@ pipeline {
 
         stage('Create ECR repository') {
             steps {
-                script {
-                    withCredentials(aws(credentialsId: 'aws-credentials-id', accessKeyVariable: 'AWS_ACCESS_KEY_ID', secretKeyVariable: 'AWS_SECRET_ACCESS_KEY')) {
-                        try {
-                            sh "aws ecr describe-repositories --repository-names ${env.ECR_REPOSITORY_NAME} --region ${env.AWS_REGION}"
-                        } catch (Exception e) {
-                            sh "aws ecr create-repository --repository-name ${env.ECR_REPOSITORY_NAME} --region ${env.AWS_REGION}"
-                        }
-                    }
-                } 
+                withCredentials([[
+                    $class: 'AmazonWebServicesCredentialsBinding',
+                    accessKeyVariable: 'AWS_ACCESS_KEY_ID',
+                    secretKeyVariable: 'AWS_SECRET_ACCESS_KEY',
+                    credentialsId: 'aws-credentials-id'
+                ]]) {
+                    try {
+                        sh "aws ecr describe-repositories --repository-names ${env.ECR_REPOSITORY_NAME} --region ${env.AWS_REGION}"
+                    } catch (Exception e) {
+                        sh "aws ecr create-repository --repository-name ${env.ECR_REPOSITORY_NAME} --region ${env.AWS_REGION}"
             }
         }
+    }
+} 
      
         stage('Tag Docker image') {
             steps {

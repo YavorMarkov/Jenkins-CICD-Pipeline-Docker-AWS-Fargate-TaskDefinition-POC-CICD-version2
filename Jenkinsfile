@@ -49,22 +49,15 @@ pipeline {
  
         stage('Create ECR repository') {
             steps {
-                withCredentials([[
-                    credentialsId: 'aws-credentials-id',
-                    accessKeyVariable: 'AWS_ACCESS_KEY_ID',
-                    secretKeyVariable: 'AWS_SECRET_ACCESS_KEY'
-                ]]) {
-                    script {
-                        def repositoryExists = sh(script: "aws ecr describe-repositories --repository-names ${env.ECR_REPOSITORY_NAME} --region ${env.AWS_REGION}", returnStatus: true)
-                        if (repositoryExists == 0) {
-                            echo "ECR repository already exists"
-                        } else {
-                            sh "aws ecr create-repository --repository-name ${env.ECR_REPOSITORY_NAME} --region ${env.AWS_REGION}"
-                        }
+                script {
+                    try {
+                        sh "aws ecr describe-repositories --repository-names ${ECR_REPOSITORY_NAME}"
+                    } catch (Exception e) {
+                        sh "aws ecr create-repository --repository-name ${ECR_REPOSITORY_NAME}"
                     }
                 }
             }
-        }
+        } 
 
 
      

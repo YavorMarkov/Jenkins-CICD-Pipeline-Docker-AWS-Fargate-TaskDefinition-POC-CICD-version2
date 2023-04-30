@@ -140,7 +140,11 @@ pipeline {
                             sh createRoleCommand
                         } finally {
                              // Attaching policy regardless of whether the role was just created or already existed
-                            sh attachPolicyCommand
+                            try {
+                                sh attachPolicyCommand
+                            } catch (Exception e) {
+                                echo "Policy is already atached."
+                            }
                         }
                         
                     }

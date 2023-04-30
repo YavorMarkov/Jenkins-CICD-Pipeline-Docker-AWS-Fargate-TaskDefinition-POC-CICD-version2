@@ -8,6 +8,7 @@ pipeline {
         ECS_CLUSTER_NAME = 'demo-aws-ecs-cluster'
         ECS_SERVICE_NAME = 'demo-aws-ecs-service'
         CONTAINER_PORT = '5000'
+        ACCOUNT_ID = sh(script: 'aws sts get-caller-identity --query Account --output text', returnStdout: true).trim()
     }   
    
     stages {
@@ -62,12 +63,12 @@ pipeline {
         stage('Push Docker image') {
             steps {
                 script {
-                    withCredentials([[
+                    withCredentials([
                         $class: 'AmazonWebServicesCredentialsBinding',
                         credentialsId: 'aws-credentials-id',
                         accessKeyVariable: 'AWS_ACCESS_KEY_ID',
                         secretKeyVariable: 'AWS_SECRET_ACCESS_KEY'
-                    ]]) {
+                    ]) {
                         def ecrLoginPassword = sh(script: "aws ecr get-login-password --region ${env.AWS_REGION}", returnStdout: true).trim()
                         def ecrRepoUrl = sh(script: "aws ecr describe-repositories --repository-names ${env.ECR_REPOSITORY_NAME} --query 'repositories[0].repositoryUri' --output text", returnStdout: true).trim()
                         sh "docker login -u AWS -p ${ecrLoginPassword} ${ecrRepoUrl}"

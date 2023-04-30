@@ -201,7 +201,7 @@ pipeline {
             }
         }
 
-        stage('Run ECS task on Fargate') {
+       stage('Run ECS task on Fargate') {
             steps {
                 script {
                     withCredentials([[
@@ -229,84 +229,98 @@ pipeline {
                                                 {
                                                     \"containerPort\": ${CONTAINER_PORT},
                                                     \"hostPort\": ${CONTAINER_PORT}
-                                                }
-                                            ],
-                                            \"logConfiguration\": {
-                                                \"logDriver\": \"awslogs\",
-                                                \"options\": {
-                                                    \"awslogs-group\": \"ecs-logs\",
-                                                    \"awslogs-region\": \"${env.AWS_REGION}\",
-                                                    \"awslogs-stream-prefix\": \"my-container\"
-                                                }
+                                            }
+                                        ],
+                                        \"logConfiguration\": {
+                                            \"logDriver\": \"awslogs\",
+                                            \"options\": {
+                                                \"awslogs-group\": \"ecs-logs\",
+                                                \"awslogs-region\": \"${env.AWS_REGION}\",
+                                                \"awslogs-stream-prefix\": \"my-container\"
                                             }
                                         }
-                                    ]' \
-                                    --output text \
-                                    --query 'taskDefinition.taskDefinitionArn'""",
-                                returnStdout: true
-                            ).trim()
+                                    }
+                                ]' \
+                                --output text \
+                                --query 'taskDefinition.taskDefinitionArn'""",  
+                            returnStdout: true
+                        ).trim()
 
-                            echo "Task definition created: ${task_definition_arn}"
+                        echo "Task definition created: ${task_definition_arn}"
 
-                            // Create a Fargate task
-                            def task_response = sh(
+                        // Create a Fargate task
+                        def task_response = sh(
+                            script: """
+                            aws ecs run-task \
+                                --cluster ${ECS_CLUSTER_NAME} \
+                                --launch-type FARGATE \
+                                --task-definition ${task_definition_arn} \
+                                --network-configuration "awsvpcConfiguration={
+                                    \\"subnets\\": [${SUBNET_IDS}],
+                                    \\"assignPublicIp\\": \\"ENABLED\\"
+                                }" \
+                                --output json""",
+                            returnStdout: true
+                        ).trim()
+
+                        def task_id = sh(
+                            script: "echo '${task_response}' | jq -r '.tasks[0].taskArn' | cut -d/ -f2",
+                            returnStdout: true
+                        ).trim()
+
+                        echo "Fargate task started: ${task_id}"
+
+                        // Wait for the task to start running
+                        timeout(time: 5, unit: 'MINUTES') {
+                            def task_status = sh(
                                 script: """
-                                aws ecs run-task \
+                                aws ecs describe-tasks \
                                     --cluster ${ECS_CLUSTER_NAME} \
-                                    --launch-type FARGATE \
-                                    --task-definition ${task_definition_arn} \
-                                    --network-configuration "awsvpcConfiguration={
-                                        \\"subnets\\": [${SUBNET_IDS}],
-                                        \\"assignPublicIp\\": \\"ENABLED\\"
-                                    }" \
-                                    --output json""",
-                                returnStdout: true
-                            ).trim()
-
-                            def task_id = sh(
-                                script: "echo '${task_response}' | jq -r '.tasks[0].taskArn' | cut -d/ -f2",
-                                returnStdout: true
-                            ).trim()
-
-                            echo "Fargate task started: ${task_id}"
-
-                            // Wait for the task to start running
-                            timeout(time: 5, unit: 'MINUTES') {
-                                def task_status = sh(
-                                    script: """
-                                    aws ecs describe-tasks \
-                                        --cluster ${ECS_CLUSTER_NAME} \
-                                        --tasks ${task_id} \
-                                        --query 'tasks[0].lastStatus' \
-                                        --output text""",
-                                    returnStdout: true
-                                ).trim()
-
-                                if (task_status != 'RUNNING') {
-                                    error "Fargate task failed to start: ${task_status}"
-                                }
-                            }
-
-                            // Get the public IP address of the task
-                            def task_response_json = readJSON text: task_response
-                            def eni_id = task_response_json.tasks[0].attachments[0].details.find { it.name == 'networkInterfaceId' }?.value
-                            def public_ip = sh(
-                                script: """
-                                aws ec2 describe-network-interfaces \
-                                    --network-interface-ids ${eni_id} \
-                                    --query 'NetworkInterfaces[0].Association.PublicIp' \
+                                    --tasks ${task_id} \
+                                    --query 'tasks[0].lastStatus' \
                                     --output text""",
                                 returnStdout: true
                             ).trim()
 
-                            echo "Task is running at http://${public_ip}:${CONTAINER_PORT}"
-
-
+                            if (task_status != 'RUNNING') {
+                                error "Fargate task failed to start: ${task_status}"
+                            }
                         }
+
+                        // Get the public IP address of the task
+                        def task_response_json = readJSON text: task_response
+                        def eni_id = task_response_json.tasks[0].attachments[0].details.find { it.name == 'networkInterfaceId' }?.value
+                        def public_ip = sh(
+                            script: """
+                            aws ec2 describe-network-interfaces \
+                                --network-interface-ids ${eni_id} \
+                                --query 'NetworkInterfaces[0].Association.PublicIp' \
+                                --output text""",
+                            returnStdout: true
+                        ).trim()
+
+                        echo "Task public IP: ${public_ip}"
+
+                    
+                        
+
+                        // Terminate the task
+                        sh(
+                            script: """
+                            aws ecs stop-task \
+                                --cluster ${ECS_CLUSTER_NAME} \
+                                --task ${task_id} \
+                                --output text \
+                                --query 'task.taskArn'""",
+                            returnStdout: true
+                        ).trim()
+
+                        echo "Fargate task terminated: ${task_id}"
+                    } catch (Exception e) {
+                        error "Failed to run Fargate task: ${e.message}"
                     }
                 }
             }
         }
     }
 }
- 

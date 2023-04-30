@@ -8,9 +8,19 @@ pipeline {
         ECS_CLUSTER_NAME = 'demo-aws-ecs-cluster'
         ECS_SERVICE_NAME = 'demo-aws-ecs-service'
         CONTAINER_PORT = '5000'
-        ACCOUNT_ID = sh(script: 'aws sts get-caller-identity --query Account --output text', returnStdout: true).trim()
     }   
-   
+    
+    stages {
+        stage('Get AWS Account ID') {
+            steps {
+                withCredentials([aws(credentialsId: 'aws-credentials-id', accessKeyVariable: 'AWS_ACCESS_KEY_ID', secretKeyVariable: 'AWS_SECRET_ACCESS_KEY')]) {
+                    env.ACCOUNT_ID = sh(script: 'aws sts get-caller-identity --query Account --output text', returnStdout: true).trim()
+            }
+        }
+    }
+}
+
+
     stages {
         stage('Checkout') {
             steps {

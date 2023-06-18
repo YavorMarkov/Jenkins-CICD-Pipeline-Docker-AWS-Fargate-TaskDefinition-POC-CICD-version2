@@ -130,6 +130,13 @@ Creates a new ECS task definition that describes the Docker container and its se
 ```grove
 stage('Create ECS task definition') { /*...*/ }
 ```
+
+### 11. Run ECS task on Fargate
+This stage runs an ECS task using the Fargate launch type. The task is defined by the task definition created in the previous stage.
+```grove
+stage('Run ECS task on Fargate') { /*...*/ }
+```
+
 **Please refer to the pipeline script(jenkinsfile) for detailed implementation of each stage.**
 
 **Ensure to replace the `/*...*/` placeholders with the actual code for each stage when you use this format.**

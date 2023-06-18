@@ -83,7 +83,7 @@ pipeline {
         CONTAINER_PORT = '5000'
     }
 }
-
+```
 ### 2. Get AWS Account ID
 Fetches the AWS Account ID required for later stages.
 

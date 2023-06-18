@@ -59,3 +59,29 @@ By following this pipeline script, the entire process of building, pushing, and 
 
 
 Explanaitions jenkins file block by block:
+
+# Jenkins Pipeline for AWS ECS and ECR
+
+This Jenkins pipeline is used for building Docker images, pushing them to AWS ECR (Elastic Container Registry), and updating AWS ECS (Elastic Container Service) services. Here is a brief description of each stage in the pipeline:
+
+## Stages
+
+### 1. Setting the agent and environment
+
+Specifies that Jenkins can run this pipeline on any available agent and sets a list of environment variables that will be used in the pipeline.
+
+```groovy
+pipeline {
+    agent any
+
+    environment {
+        AWS_REGION = 'eu-central-1'
+        ECR_REPOSITORY_NAME = 'demo1'
+        TASK_FAMILY_NAME = 'demo1-aws-ecr-example'
+        ECS_CLUSTER_NAME = 'demo-aws-ecs-cluster'
+        ECS_SERVICE_NAME = 'demo-aws-ecs-service'
+        CONTAINER_PORT = '5000'
+    }
+}
+
+

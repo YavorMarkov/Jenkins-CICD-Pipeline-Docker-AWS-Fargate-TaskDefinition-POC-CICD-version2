@@ -111,21 +111,21 @@ Tags the Docker image built in the previous stages with the URL of the ECR repos
 stage('Tag Docker image') { /*...*/ }
 ```
 
-###7. Push Docker image
+### 7. Push Docker image
 Logs in to the ECR repository and pushes the Docker image to it.
 ```grove
 stage('Push Docker image') { /*...*/ }
 ```
-8. Fetch default VPC and subnets
+### 8. Fetch default VPC and subnets
 ```grove
 stage('Fetch default VPC and subnets') { /*...*/ }
 ```
-9. Create IAM Role
+### 9. Create IAM Role
 Creates an IAM role that allows ECS tasks to call AWS services.
 ```grove
 stage('Create IAM Role') { /*...*/ }
 ```
-10. Create ECS task definition
+### 10. Create ECS task definition
 Creates a new ECS task definition that describes the Docker container and its settings.
 ```grove
 stage('Create ECS task definition') { /*...*/ }

@@ -58,7 +58,7 @@ Stages:
 By following this pipeline script, the entire process of building, pushing, and deploying a Dockerized application on AWS is automated. This approach helps ensure that any changes made to the source code are consistently built, tested, and deployed to the production environment. This, in turn, allows for faster feedback, quicker bug fixes, and overall improved software quality.
 
 
-Explanaitions jenkins file block by block:
+**Explanaitions jenkins file block by block:**
 
 # Jenkins Pipeline for AWS ECS and ECR
 

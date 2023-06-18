@@ -89,47 +89,47 @@ Fetches the AWS Account ID required for later stages.
 
 ```groovy
 stage('Get AWS Account ID') { /*...*/ }
-
+```
 ### 3. Checkout
 Checks out source code from the configured repository in the Jenkins job configuration.
 ```grove
 stage('Checkout') { /*...*/ }
-
+```
 ### 4. Build Docker image
 Builds a Docker image using the Dockerfile located in the root of the project.
 ```grove
 stage('Build Docker image') { /*...*/ }
-
+```
 ### 5. Create ECR repository
 Creates an ECR repository in AWS if it does not already exist.
 ```grove
 stage('Create ECR repository') { /*...*/ }
-
+```
 ### 6. Tag Docker image
 Tags the Docker image built in the previous stages with the URL of the ECR repository.
 ```grove
 stage('Tag Docker image') { /*...*/ }
-
+```
 
 ###7. Push Docker image
 Logs in to the ECR repository and pushes the Docker image to it.
 ```grove
 stage('Push Docker image') { /*...*/ }
-
+```
 8. Fetch default VPC and subnets
 ```grove
 stage('Fetch default VPC and subnets') { /*...*/ }
-
+```
 9. Create IAM Role
 Creates an IAM role that allows ECS tasks to call AWS services.
 ```grove
 stage('Create IAM Role') { /*...*/ }
-
+```
 10. Create ECS task definition
 Creates a new ECS task definition that describes the Docker container and its settings.
 ```grove
 stage('Create ECS task definition') { /*...*/ }
-
+```
 **Please refer to the pipeline script for detailed implementation of each stage.**
 
 **Ensure to replace the `/*...*/` placeholders with the actual code for each stage when you use this format.**

@@ -130,7 +130,7 @@ Creates a new ECS task definition that describes the Docker container and its se
 ```grove
 stage('Create ECS task definition') { /*...*/ }
 ```
-**Please refer to the pipeline script for detailed implementation of each stage.**
+**Please refer to the pipeline script(jenkinsfile) for detailed implementation of each stage.**
 
 **Ensure to replace the `/*...*/` placeholders with the actual code for each stage when you use this format.**
 
